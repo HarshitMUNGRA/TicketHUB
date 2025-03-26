@@ -9,6 +9,11 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
+if (builder.Environment.IsDevelopment())
+{
+    builder.Configuration.AddUserSecrets<Program>();
+}
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
