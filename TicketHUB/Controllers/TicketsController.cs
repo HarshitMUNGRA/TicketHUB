@@ -1,9 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Azure.Storage.Queues;
-using System.Text.Json; // For JSON serialization
-using System.Threading.Tasks;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
+using System.Text.Json;
 
 namespace TicketHUB.Controllers
 {
@@ -14,14 +11,12 @@ namespace TicketHUB.Controllers
         private readonly ILogger<TicketsController> logger;
         private readonly IConfiguration _configuration;
 
-        // Constructor to inject IConfiguration
         public TicketsController(IConfiguration configuration, ILogger<TicketsController> logger)
         {
             _configuration = configuration;
             this.logger = logger;
         }
 
-        // Connection string and queue name for Azure Storage Queue
         private readonly string _queueName = "tickets";
 
         [HttpPost]
@@ -32,7 +27,6 @@ namespace TicketHUB.Controllers
                 return BadRequest("Invalid purchase data.");
             }
 
-            // Get connection string from appsettings.json or secrets.json
             string? connectionString = _configuration["AzureStorageConnectionString"];
 
             if (string.IsNullOrEmpty(connectionString))
@@ -42,20 +36,16 @@ namespace TicketHUB.Controllers
 
             try
             {
-                // Create a QueueClient instance
                 var queueClient = new QueueClient(connectionString, _queueName);
 
-                // Serialize the object to JSON
                 string message = JsonSerializer.Serialize(ticketPurchase);
 
-                // Send the serialized message to the Azure Storage Queue
                 await queueClient.SendMessageAsync(message);
 
                 return Ok("Ticket purchase processed successfully.");
             }
             catch (Exception ex)
             {
-                // Log the exception
                 logger.LogError(ex, "An error occurred while processing the ticket purchase.");
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
