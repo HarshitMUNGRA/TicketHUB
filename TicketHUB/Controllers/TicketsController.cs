@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Azure.Storage.Queues;
 using System.Text.Json;
+using TicketHUB.Model;
 
 namespace TicketHUB.Controllers
 {
@@ -22,9 +23,9 @@ namespace TicketHUB.Controllers
         [HttpPost]
         public async Task<IActionResult> PurchaseTicket([FromBody] TicketPurchase ticketPurchase)
         {
-            if (ticketPurchase == null)
+            if (ticketPurchase == null || !ModelState.IsValid)
             {
-                return BadRequest("Invalid purchase data.");
+                return BadRequest(ModelState);
             }
 
             string? connectionString = _configuration["AzureStorageConnectionString"];
@@ -49,6 +50,6 @@ namespace TicketHUB.Controllers
                 logger.LogError(ex, "An error occurred while processing the ticket purchase.");
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
-        }
     }
+}
 }
